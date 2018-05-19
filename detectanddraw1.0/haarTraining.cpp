@@ -10,6 +10,7 @@ using namespace tinyxml2;
 #include"delete.h"
 #include"classifier.h"
 #include <time.h>
+#include"RectLike.h"
 using namespace std;
 /*
 *
@@ -905,19 +906,20 @@ int* predict(int* preResult, int pictureNum, CvIntHaarFeatures* haarFeatures, Cv
 *对图片进行预测
 */
 static
-int predictSignal( CvIntHaarFeatures* haarFeatures,MyMat* pic,MySize size, MyCascadeClassifier classifier)
+int predictSignal(CvIntHaarFeatures* haarFeatures, MyMat* pic, MySize size, MyCascadeClassifier classifier)
 {
 	float scal = MAX(classifier.size.width / size.width * 1.0, classifier.size.height / size.height * 1.0, );
 	float h_scale_rate = size.height * 1.0 / classifier.size.height;
 	float w_scale_rate = size.width * 1.0 / classifier.size.width;
 	int strong_number = classifier.StrongClassifier.size();
-	float val = 0.0f;
-	float predictSum = 0.0;
+
 	for (int i = 0;i < strong_number;i++)
 	{
 		/*
 		*计算加和 0.5 * (a1 + a2 + a3 +...)
 		*/
+		float val = 0.0f;
+		float predictSum = 0.0;
 		int length = classifier.StrongClassifier[i].classifier.size();
 		vector<float> at;
 		float sum = 0.0f;
@@ -938,7 +940,7 @@ int predictSignal( CvIntHaarFeatures* haarFeatures,MyMat* pic,MySize size, MyCas
 			CvTHaarFeature haarFeature;
 			CvFastHaarFeature fastHaar;
 			//特征拷贝 
-			
+
 			haarFeature.tilted = haarFeatures->feature[featureNum].tilted;
 			haarFeature.rect[0].r.x = haarFeatures->feature[featureNum].rect[0].r.x * w_scale_rate;
 			haarFeature.rect[0].r.y = haarFeatures->feature[featureNum].rect[0].r.y  * h_scale_rate;
@@ -957,12 +959,12 @@ int predictSignal( CvIntHaarFeatures* haarFeatures,MyMat* pic,MySize size, MyCas
 			haarFeature.rect[2].r.width = haarFeatures->feature[featureNum].rect[2].r.width * w_scale_rate;
 			haarFeature.rect[2].r.height = haarFeatures->feature[featureNum].rect[2].r.height * h_scale_rate;
 			haarFeature.rect[2].weight = haarFeatures->feature[featureNum].rect[2].weight;
-			
-	//		cout << haarFeature.rect[0].r.x << ","<<haarFeatures->feature[featureNum].rect[0].r.x << endl;
-			icvConvertToFastHaarFeature(&haarFeature,&fastHaar,1, size.width + 1);
+
+			//		cout << haarFeature.rect[0].r.x << ","<<haarFeatures->feature[featureNum].rect[0].r.x << endl;
+			icvConvertToFastHaarFeature(&haarFeature, &fastHaar, 1, size.width + 1);
 			//cout << fastHaar.rect[0].p0<<","<<haarFeatures->fastfeature[featureNum].rect[0].p0;
 
-			val = cvEvalFastHaarFeature2(fastHaar, pic->data.i , pic->data.i);
+			val = cvEvalFastHaarFeature2(fastHaar, pic->data.i, pic->data.i);
 			if ((classifier.StrongClassifier[i].classifier[j].left == 1) && (val < classifier.StrongClassifier[i].classifier[j].threshold))
 			{
 				predictSum = predictSum + at[j];
@@ -976,16 +978,16 @@ int predictSignal( CvIntHaarFeatures* haarFeatures,MyMat* pic,MySize size, MyCas
 		{
 			at.clear();
 			continue;
-		}		
+		}
 		else
 		{
 			return 0;
 		}
-			
-		
+
+
 	}
 	return 1;
-	
+
 }
 /*
 *对图片进行预测
@@ -1308,6 +1310,7 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 	pic_size.width = pic->width;
 	pic_size.height = pic->height;
 
+	vector<int> labels;
 	MySize classifer_size;
 	classifer_size.width = classifer.size.width;
 	classifer_size.height = classifer.size.height;  //xml检测器最小检测范围
@@ -1329,9 +1332,11 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 	for (current_scal = 1.0;;current_scal *= scale)
 	{
 		cout << current_scal << endl;
-		if (((classifer_size.width * current_scal) > maxSize.width) || ((classifer_size.height * current_scal) > maxSize.height))
+		if (((classifer_size.width * current_scal) > (maxSize.width )) || ((classifer_size.height * current_scal) > (maxSize.height )))
 		{
-			break;
+
+				break;
+
 		} //控制不大于最大
 		if (((classifer_size.width * current_scal) < minSize.width) || ((classifer_size.height * current_scal) < minSize.height))
 		{
@@ -1360,26 +1365,29 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 				for (int kk = 0;kk < classifer_size.height;kk++)
 				{
 					
-					memcpy(&subWindow->data.ptr[kk * subWindow->width], &pic->data.ptr[(i + kk)*pic->width + j], sizeof(uchar)*(subWindow->width));
+					memcpy(&subWindow->data.ptr[kk * subWindow->width], &outPic->data.ptr[(i + kk)*outPic->width + j], sizeof(uchar)*(subWindow->width));
 
 				}
-				/*
-				char name[100];
-				sprintf(name,"e:\\res5\\%d.png",count);
-			    imwrite(name,transCvMat(subWindow));
-				count++;
-				*/
+
 				//计算积分图
 				GetGrayIntegralImage(subWindow->data.ptr, subWindowSum->data.i, subWindow->width, subWindow->height, subWindow->step);
 				//开始检测
-				if (predictSignalForShrink(haar_features, subWindowSum, classifer_size, classifer))
+				int result = predictSignal(haar_features, subWindowSum, classifer_size, classifer);
+
+				if (result == 1)
 				{
 					MyRect tempRect;
-					tempRect.x = i;
-					tempRect.y = j;
+					tempRect.x = i * current_scal ;
+					tempRect.y = j * current_scal;
 					tempRect.width = classifer_size.width * current_scal;
 					tempRect.height = classifer_size.height * current_scal;
 					faces.push_back(tempRect);
+					labels.push_back(count);
+					char name[100];
+					sprintf(name,"e:\\res5\\%d.png",count);
+					imwrite(name,transCvMat(subWindow));
+					count++;
+					
 
 				}
 				
@@ -1387,14 +1395,27 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 				releaseMyMat(subWindowSum);
 			}
 		}
+		releaseMyMat(outPic);
 
 	}
+	
+	RectLike rLike(0.1);
+	vector <MyRect>mergefaces;   //合并后的人脸
+	int mecount = rLike.Disjoint_set_merge(faces, mergefaces, labels, rLike);
 	//转化
+	reFaces = (FaceSeq*)malloc(sizeof(int) + sizeof(MyRect) * mergefaces.size());
+	reFaces->rect = (MyRect*)(reFaces + 1);
+	reFaces->count = mergefaces.size();
+	for (int i = 0;i < mergefaces.size();i++)
+		reFaces->rect[i] = mergefaces[i];
+   /*
+	
 	reFaces = (FaceSeq*)malloc(sizeof(int) + sizeof(MyRect) * faces.size());
 	reFaces->rect = (MyRect*)(reFaces + 1);
 	reFaces->count = faces.size();
 	for (int i = 0;i < faces.size();i++)
 		reFaces->rect[i] = faces[i];
+	*/	
 	//计算积分图
 	icvReleaseIntHaarFeatures(&haar_features);
 

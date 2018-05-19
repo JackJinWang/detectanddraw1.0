@@ -1,8 +1,10 @@
 #include<iostream>
+#include<fstream>
 #include"haarTraining.h"
 #include"classifier.h"
 #include"myIntergal.h"
 #include"delete.h"
+
 using namespace std;
 
 
@@ -20,9 +22,9 @@ int main(int argc, char* argv[])
 
 	cout << cascade.StrongClassifier.size();
 
-	Mat picMat = imread("e:\\5.jpg",0);
+	Mat picMat = imread("e:\\6.png",0);
 	MyMat *tempMat = createMyMat(picMat.rows, picMat.cols, ONE_CHANNEL, UCHAR_TYPE);
-	tempMat = transMat(tempMat,"e:\\5.jpg");
+	tempMat = transMat(tempMat,"e:\\6.png");
 	detect_and_draw(tempMat);
 	
 
@@ -32,42 +34,50 @@ int main(int argc, char* argv[])
 }
 void detect_and_draw(MyMat *img)
 {
+	ofstream filePic;
 	FaceSeq *faces = NULL;
-	MyMat *outpic = createMyMat(300, 450, ONE_CHANNEL, UCHAR_TYPE);
-	bin_linear_scale(img, outpic, 450, 300);
-	//outpic = transMat(outpic,"e:\\2.jpg");
-	Mat picMat = imread("e:\\5.jpg", 0);
+	Mat picMat = imread("e:\\6.png", 0);
+	MyMat *outpic = createMyMat(picMat.rows, picMat.cols, ONE_CHANNEL, UCHAR_TYPE);
+	//bin_linear_scale(img, outpic, 450, 300);
+	outpic = transMat(outpic,"e:\\6.png");	
+	if (outpic == nullptr)
+	{
+		cout << "Í¼Æ¬²»´æÔÚ" << endl;
+		return;
+	}
 	Mat smallPic = transCvMat(outpic);
 	MySize minSize;
 	minSize.width = 19;
 	minSize.height = 19;
 	MySize maxSize;
-	maxSize.width = 300;
-	maxSize.height = 300;
-	static CvScalar colors[] =
-	{
-		{ { 0,0,255 } },
-		{ { 0,128,255 } },
-		{ { 0,255,255 } },
-		{ { 0,255,0 } },
-		{ { 255,128,0 } },
-		{ { 255,255,0 } },
-		{ { 255,0,0 } },
-		{ { 255,0,255 } }
-	};
-	faces = myHaarDetectObjectsShrink(outpic, cascade, 1.1, 1, 0, minSize, maxSize);
+	maxSize.width = 100;
+	maxSize.height = 100;
+
+	faces = myHaarDetectObjectsShrink(outpic, cascade, 1.2, 1, 0, minSize, maxSize);
+	
+	filePic.open("E://faces.txt", ios::out);
 	
 	for (int i = 0; i <faces->count; i++)
 	{
 		CvPoint center;
 		Rect r;
+		filePic << i << ": ";
 		r.x= faces->rect[i].y;
+		filePic << "x:"<<r.x;
 		r.y = faces->rect[i].x;
+		filePic <<",y:" <<r.y;
 		r.width = faces->rect[i].width;
+		filePic << ",width:" << r.width;
 		r.height = faces->rect[i].height;
+		filePic << ",height:" << r.height;
 		rectangle(smallPic,r, Scalar(0, 0, 255));
+		//imshow("src", smallPic);
+		waitKey();
+		filePic << endl;
 	}
-	imshow("src", picMat);
+	
+	filePic.close();
+
 	imshow("2", smallPic);
 	waitKey();
 	free(faces);
