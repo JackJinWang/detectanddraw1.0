@@ -30,3 +30,11 @@ typedef struct MyRect
 	int height; /* ¸ß */
 }
 MyRect;
+/****************************************************************************************\
+*                                  Matrix type (MyAvgComp)                                   *
+\****************************************************************************************/
+typedef struct MyAvgComp
+{
+	MyRect rect;
+	int neighbors;
+} MyAvgComp;

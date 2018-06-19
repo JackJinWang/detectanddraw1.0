@@ -1297,10 +1297,11 @@ FaceSeq* myHaarDetectObjects(MyMat *pic, MyCascadeClassifier classifer, float sc
 	return reFaces;
 }
 /*
-*图像缩小
+*多尺度检测
 */
 
-FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, float scale, int neighbor, int type, MySize minSize, MySize maxSize)
+FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, float scale, 
+	int neighbor, int type, MySize minSize, MySize maxSize)
 {
 	
 	FaceSeq *reFaces = NULL;
@@ -1401,7 +1402,7 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 	
 	RectLike rLike(0.1);
 	vector <MyRect>mergefaces;   //合并后的人脸
-	int mecount = rLike.Disjoint_set_merge(faces, mergefaces, labels, rLike);
+	int mecount = rLike.Disjoint_set_merge2(neighbor,faces, mergefaces, labels, rLike);
 	//转化
 	reFaces = (FaceSeq*)malloc(sizeof(int) + sizeof(MyRect) * mergefaces.size());
 	reFaces->rect = (MyRect*)(reFaces + 1);
@@ -1415,7 +1416,7 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 	reFaces->count = faces.size();
 	for (int i = 0;i < faces.size();i++)
 		reFaces->rect[i] = faces[i];
-	*/	
+	*/
 	//计算积分图
 	icvReleaseIntHaarFeatures(&haar_features);
 

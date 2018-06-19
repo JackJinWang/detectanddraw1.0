@@ -7,6 +7,7 @@
 #include"basic.h"
 #include "MyMat.h"
 #include <opencv2\highgui\highgui.hpp>
+#include <opencv2\imgproc\imgproc.hpp>
 using namespace cv;
 inline MyMat* transMat(MyMat * result,char *picName)
 {
@@ -28,6 +29,31 @@ inline MyMat* transMat(MyMat * result,char *picName)
 		{
 			// assigns new value
 			result->data.ptr[i*width+j] = temp[j];
+		}
+	}
+	return result;
+}
+inline MyMat* transMatAndSmooth(MyMat * result, char *picName)
+{
+	Mat img = imread(picName, CV_LOAD_IMAGE_GRAYSCALE);
+	int height = img.size().height;
+	int width = img.size().width;
+	if (img.empty())
+	{
+		return nullptr;
+	}
+	Mat out;
+	blur(img, out, Size(3, 3));
+	uchar *temp;
+	for (int i = 0; i < height; i++)
+	{
+		// get the pointer to the ith row
+		temp = out.ptr<uchar>(i);
+		// operates on each pixel
+		for (int j = 0; j < width; j++)
+		{
+			// assigns new value
+			result->data.ptr[i*width + j] = temp[j];
 		}
 	}
 	return result;

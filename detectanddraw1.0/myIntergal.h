@@ -14,5 +14,6 @@ MyMat* bin_linear_scale(MyMat* input_img, MyMat* output_img, int width, int heig
 /*
 *并查集窗口合并，超过p，百分比合并
 */
+bool isOverlap(const MyRect &rc1, const MyRect &rc2); //判断重合
 bool judge(double p, MyRect r1, MyRect r2);
 int myPartition(const vector<MyRect>& _vec, vector<int>& labels,double p);

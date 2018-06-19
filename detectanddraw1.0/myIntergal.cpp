@@ -133,11 +133,22 @@ MyMat* bin_linear_scale(MyMat* input_img, MyMat* output_img, int width, int heig
 bool judge(double p, MyRect r1, MyRect r2)
 {
 	//方法1，opencv hog,Cascade使用的合并方法  
+	
 	double delta = p*(MIN(r1.width, r2.width) + MAX(r1.height, r2.height))*0.5;
 	return std::abs(r1.x - r2.x) <= delta &&
 		std::abs(r1.y - r2.y) <= delta &&
 		std::abs(r1.x + r1.width - r2.x - r2.width) <= delta &&
 		std::abs(r1.y + r1.height - r2.y - r2.height) <= delta;
+	/*	
+	int distance = (r1.width)*0.3;
+
+	return r2.x <= r1.x + distance &&
+		r2.x >= r1.x - distance &&
+		r2.y <= r1.y + distance &&
+		r2.y >= r1.y - distance &&
+		r2.width <= (int)(r1.width * 1.5) &&
+		(int)(r2.width * 1.5) >= r1.width;
+		*/
 }
 
 // This function splits the input sequence or set into one or more equivalence classes and
@@ -232,4 +243,15 @@ int myPartition(const vector<MyRect>& _vec, vector<int>& labels,double p)
 	}
 
 	return nclasses;
+}
+bool isOverlap(const MyRect &rc1, const MyRect &rc2)
+{
+	if (rc1.x + rc1.width  > rc2.x &&
+		rc2.x + rc2.width  > rc1.x &&
+		rc1.y + rc1.height > rc2.y &&
+		rc2.y + rc2.height > rc1.y
+		)
+		return true;
+	else
+		return false;
 }

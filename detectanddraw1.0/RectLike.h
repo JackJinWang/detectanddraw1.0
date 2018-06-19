@@ -19,7 +19,8 @@ public:
 	float overlap_area(MyRect r1, MyRect r2);//判断框出图像的重叠面积  
 	bool operator()(MyRect r1, MyRect r2);
 	MyRect merge(MyRect r1, MyRect r2);
-	int Disjoint_set_merge(vector<MyRect> MyRects, vector<MyRect>& merge_rects, vector<int>& labels, RectLike rLike);
+	int Disjoint_set_merge(int min_neighber,vector<MyRect> MyRects, vector<MyRect>& merge_rects, vector<int>& labels, RectLike rLike);
+	int Disjoint_set_merge2(int min_neighber, vector<MyRect> MyRects, vector<MyRect>& merge_rects, vector<int>& labels, RectLike rLike);
 	//并查集方法，只现实了区域的合并  
 };
 
@@ -103,13 +104,21 @@ MyRect RectLike::merge(MyRect r1, MyRect r2)
 	MyRect rect = { start_x, start_y, end_x - start_x, end_y - start_y };
 	return rect;
 }
-int RectLike::Disjoint_set_merge(vector<MyRect> rects, vector<MyRect>& merge_rects, vector<int>& labels, RectLike rLike)
+int RectLike::Disjoint_set_merge(int min_neighber,vector<MyRect> rects, vector<MyRect>& merge_rects, vector<int>& labels, RectLike rLike)
 {   //并查集方法，只现实了区域的合并  
 	//rects为合并前的矩形框，merge_rects为合并后矩形框，labels为矩形框的标签，p为合并的置信度  
 	vector<int>label_temp;
-	for (size_t i = 0;i<labels.size();i++)
+	int * number_labels = new int[labels.size()];
+	for (size_t i = 0;i < labels.size();i++)
+	{
 		label_temp.push_back(1);
-	int count = myPartition(rects, labels,p);
+		number_labels[i] = 0;
+	}
+	int count = myPartition(rects, labels, p);
+	for (size_t i = 0;i < labels.size();i++)
+	{
+		number_labels[labels[i]]++;
+	}
 	//如果没有合并，还是返回原始的rects,labels，如果合并了，返回以0开始的labels  
 	if (count != labels.size())//两者不相等，说明进行了合并  
 	{
@@ -119,20 +128,107 @@ int RectLike::Disjoint_set_merge(vector<MyRect> rects, vector<MyRect>& merge_rec
 			if (label_temp[i] == 0) continue;
 			MyRect rect_temp = rects[i];
 			label_temp[i] = 0;
-			for (size_t j = i + 1;j<labels.size();j++)
+			if (number_labels[i] < min_neighber)
 			{
-				if (labels[i] == labels[j])
-				{
-					rect_temp = rLike.merge(rect_temp, rects[j]);
-					label_temp[j] = 0;
-				}
-
+				label_temp[i] = 0;
+				continue;
 			}
-			merge_rects.push_back(rect_temp);
+			else
+			{
+				for (size_t j = i + 1;j < labels.size();j++)
+				{
+					if (labels[i] == labels[j])
+					{
+						rect_temp = rLike.merge(rect_temp, rects[j]);
+						label_temp[j] = 0;
+					}
+
+
+				}
+				merge_rects.push_back(rect_temp);
+			}
 		}
 
 	}
 	return count;
-
+	delete[]number_labels;
 }
 
+int RectLike::Disjoint_set_merge2(int min_neighber, vector<MyRect> rects, vector<MyRect>& merge_rects, vector<int>& labels, RectLike rLike)
+{   //并查集方法，只现实了区域的合并  
+	//rects为合并前的矩形框，merge_rects为合并后矩形框，labels为矩形框的标签，p为合并的置信度  
+	MyAvgComp *comps;
+	vector<int>label_temp;
+	vector<MyAvgComp> faceTemp;
+	int * number_labels = new int[labels.size()];
+	for (size_t i = 0;i < labels.size();i++)
+	{
+		label_temp.push_back(1);
+		number_labels[i] = 0;
+	}
+	int count = myPartition(rects, labels, p);
+	comps = (MyAvgComp*)malloc((count + 1) * sizeof(comps[0])); // 
+	memset(comps, 0, (count + 1) * sizeof(comps[0]));
+	// count number of neighbors
+	for (int i = 0; i <  labels.size(); i++)
+	{
+		MyRect r1 = rects[i];
+		int idx = labels[i];
+		assert((unsigned)idx < (unsigned)count);
+		comps[idx].neighbors++;
+		comps[idx].rect.x += r1.x;
+		comps[idx].rect.y += r1.y;
+		comps[idx].rect.width += r1.width;
+		comps[idx].rect.height += r1.height;
+	}
+	// calculate average bounding box
+	for (int i = 0; i < count; i++)
+	{
+		int n = comps[i].neighbors;
+		if (n >= min_neighber)
+		{
+			MyAvgComp comp;
+			comp.rect.x = (comps[i].rect.x * 2 + n) / (2 * n);
+			comp.rect.y = (comps[i].rect.y * 2 + n) / (2 * n);
+			comp.rect.width = (comps[i].rect.width * 2 + n) / (2 * n);
+			comp.rect.height = (comps[i].rect.height * 2 + n) / (2 * n);
+			comp.neighbors = comps[i].neighbors;
+			faceTemp.push_back(comp);
+		}
+	}
+	
+	// filter out small face rectangles inside large face rectangles
+	for (int i = 0; i < faceTemp.size(); i++)
+	{
+		MyAvgComp r1 = faceTemp[i];
+		int  flag = 1;
+		for (int j = 0; j < faceTemp.size(); j++)
+		{
+			MyAvgComp r2 = faceTemp[j];
+			int distance_x = r2.rect.width * 0.5;
+			int distance_y = r2.rect.height * 0.5;
+		//	distance_x = r2.rect.width;
+		//	distance_y = r2.rect.height;
+			//int distance = 0;
+			if( (i != j) &&
+				(r1.rect.x >= r2.rect.x - distance_x) &&
+				(r1.rect.y >= r2.rect.y - distance_y)&&
+				(r1.rect.x + r1.rect.width <= r2.rect.x + r2.rect.width + distance_x)&&
+				(r1.rect.y + r1.rect.height <= r2.rect.y + r2.rect.height + distance_y)
+				&& (r2.neighbors > MAX(1, r1.neighbors) || r1.neighbors < 1))
+			{
+				flag = 0;
+				break;
+			}
+		}
+		if (flag)
+		{
+			merge_rects.push_back(r1.rect);
+		}
+	}
+
+	delete comps;
+	delete[] number_labels;
+	return count;
+	
+}
