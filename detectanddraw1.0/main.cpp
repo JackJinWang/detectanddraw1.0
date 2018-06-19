@@ -13,7 +13,7 @@ static MyCascadeClassifier cascade;
 //const char* cascade_name = "F:\\workplace\\visualstudio\\facesource\\testpic\\jilianre\\cascade.xml";
 
 //const char* cascade_name = "F:\\workplace\\visualstudio\\facesource\\testpic\\1.7dt\\cascade.xml";
-const char* cascade_name = "F:\\workplace\\test\\result\\1.8dt\\cascade.xml";
+const char* cascade_name = "F:\\workplace\\test\\result\\1.7dt\\cascade.xml";
 //const char* cascade_name = "F:\\workplace\\visualstudio\\facesource\\testpic\\20180424_10001000\\casde.xml";
 //人脸检测要用到的分类器  
 void detect_and_draw(MyMat *img);
