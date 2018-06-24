@@ -1332,7 +1332,7 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 	//图像缩小
 	for (current_scal = 1.0;;current_scal *= scale)
 	{
-		cout << current_scal << endl;
+	//	cout << current_scal << endl;
 		if (((classifer_size.width * current_scal) > (maxSize.width )) || ((classifer_size.height * current_scal) > (maxSize.height )))
 		{
 
@@ -1349,9 +1349,11 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 		MyMat *outPic = createMyMat(height,width,ONE_CHANNEL,UCHAR_TYPE);
 	//	MyMat *outPicSum = createMyMat(height+1, width+1, ONE_CHANNEL, INT_TYPE); //缩小后积分图
 		bin_linear_scale(pic, outPic, width, height);  //缩小图像
+		/*
 		char name[100];
 		sprintf(name, "e:\\res4\\%d.png", count2++);
 			imwrite(name, transCvMat(outPic));
+			*/
 	//	GetGrayIntegralImage(outPic->data.ptr, outPicSum->data.i, width, height, outPic->step); //计算积分图
 		for (int i = 0;i < outPic->height - classifer_size.height - 1;i++)
 		{
@@ -1384,9 +1386,11 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 					tempRect.height = classifer_size.height * current_scal;
 					faces.push_back(tempRect);
 					labels.push_back(count);
+					/*
 					char name[100];
 					sprintf(name,"e:\\res5\\%d.png",count);
 					imwrite(name,transCvMat(subWindow));
+					*/
 					count++;
 					
 
@@ -1400,15 +1404,17 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 
 	}
 	
-	RectLike rLike(0.1);
+	RectLike rLike(0.2);
 	vector <MyRect>mergefaces;   //合并后的人脸
 	int mecount = rLike.Disjoint_set_merge2(neighbor,faces, mergefaces, labels, rLike);
+	
 	//转化
 	reFaces = (FaceSeq*)malloc(sizeof(int) + sizeof(MyRect) * mergefaces.size());
 	reFaces->rect = (MyRect*)(reFaces + 1);
 	reFaces->count = mergefaces.size();
 	for (int i = 0;i < mergefaces.size();i++)
 		reFaces->rect[i] = mergefaces[i];
+	
    /*
 	
 	reFaces = (FaceSeq*)malloc(sizeof(int) + sizeof(MyRect) * faces.size());

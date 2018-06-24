@@ -196,7 +196,53 @@ int RectLike::Disjoint_set_merge2(int min_neighber, vector<MyRect> rects, vector
 			faceTemp.push_back(comp);
 		}
 	}
-	
+	int *flag_merge = new int[faceTemp.size()];
+	for (int i = 0;i < faceTemp.size();i++)
+	{
+		flag_merge[i] = 1;
+	}
+	for (int i = 0; i < faceTemp.size(); i++)
+	{
+		MyAvgComp r1 = faceTemp[i];
+		int  flag = 1;
+		for (int j = 0; j < faceTemp.size(); j++)
+		{
+			if ((flag_merge[i] == 0) && (flag_merge[j] == 0))
+			{
+				continue;
+			}
+			MyAvgComp r2 = faceTemp[j];
+			int distance_x = r2.rect.width * 0.5;
+			int distance_y = r2.rect.height * 0.5;
+			//	distance_x = r2.rect.width;
+			//	distance_y = r2.rect.height;
+			//int distance = 0;
+			//r1 ÔÚ r2µÄ·¶Î§ÄÚ
+			if ((i!=j)&&
+				(r1.rect.x >= r2.rect.x - distance_x) &&
+				(r1.rect.y >= r2.rect.y - distance_y) &&
+				(r1.rect.x + r1.rect.width <= r2.rect.x + r2.rect.width + distance_x) &&
+				(r1.rect.y + r1.rect.height <= r2.rect.y + r2.rect.height + distance_y))
+			{
+				if(r2.neighbors >= MAX(3, r1.neighbors) || r1.neighbors < 3)
+					flag_merge[i] = 0;
+				if (r1.neighbors >= MAX(3, r2.neighbors) || r2.neighbors < 3)
+					flag_merge[j] = 0;
+			}
+		}
+		/*
+		if (flag)
+		{
+			merge_rects.push_back(r1.rect);
+		}
+		*/
+	}
+	for (int i = 0;i < faceTemp.size();i++)
+	{
+		if (flag_merge[i] == 1)
+			merge_rects.push_back(faceTemp[i].rect);
+	}
+	/*
 	// filter out small face rectangles inside large face rectangles
 	for (int i = 0; i < faceTemp.size(); i++)
 	{
@@ -214,8 +260,8 @@ int RectLike::Disjoint_set_merge2(int min_neighber, vector<MyRect> rects, vector
 				(r1.rect.x >= r2.rect.x - distance_x) &&
 				(r1.rect.y >= r2.rect.y - distance_y)&&
 				(r1.rect.x + r1.rect.width <= r2.rect.x + r2.rect.width + distance_x)&&
-				(r1.rect.y + r1.rect.height <= r2.rect.y + r2.rect.height + distance_y)
-				&& (r2.neighbors > MAX(1, r1.neighbors) || r1.neighbors < 1))
+				(r1.rect.y + r1.rect.height <= r2.rect.y + r2.rect.height + distance_y)&&
+				 (r2.neighbors >= MAX(1, r1.neighbors) || r1.neighbors < 3))
 			{
 				flag = 0;
 				break;
@@ -226,8 +272,9 @@ int RectLike::Disjoint_set_merge2(int min_neighber, vector<MyRect> rects, vector
 			merge_rects.push_back(r1.rect);
 		}
 	}
-
-	delete comps;
+	*/
+	delete []flag_merge;
+	free (comps);
 	delete[] number_labels;
 	return count;
 	

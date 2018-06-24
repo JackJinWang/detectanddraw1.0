@@ -4,7 +4,7 @@
 #include"classifier.h"
 #include"myIntergal.h"
 #include"delete.h"
-
+#include<time.h>
 using namespace std;
 
 
@@ -21,21 +21,22 @@ int main(int argc, char* argv[])
 {
 	cascade = readXML(cascade_name, cascade);
 	cout << cascade.StrongClassifier.size() << endl;
-	Mat picMat = imread("e:\\2.jpg", 0);
+	Mat picMat = imread("e:\\56.jpg", 0);
 	MyMat *tempMat = createMyMat(picMat.rows, picMat.cols, ONE_CHANNEL, UCHAR_TYPE);
-	tempMat = transMat(tempMat, "e:\\2.jpg");
+	tempMat = transMat(tempMat, "e:\\56.jpg");
 	detect_and_draw(tempMat);
 	return 0;
 }
 
 void detect_and_draw(MyMat *img)
 {
+	double start, end;
 	ofstream filePic;
 	FaceSeq *faces = NULL;
-	Mat picMat = imread("e:\\51.jpg");
+	Mat picMat = imread("e:\\ce\\004.jpg");
 	MyMat *outpic = createMyMat(picMat.rows, picMat.cols, ONE_CHANNEL, UCHAR_TYPE);
 	//bin_linear_scale(img, outpic, 450, 300);
-	outpic = transMatAndSmooth(outpic, "e:\\51.jpg");
+	outpic = transMatAndSmooth(outpic, "e:\\ce\\004.jpg");
 	if (outpic == nullptr)
 	{
 		cout << "Í¼Æ¬²»´æÔÚ" << endl;
@@ -48,9 +49,10 @@ void detect_and_draw(MyMat *img)
 	MySize maxSize;
 	maxSize.width = 500;
 	maxSize.height = 500;
-
-	faces = myHaarDetectObjectsShrink(outpic, cascade, 1.2, 4, 0, minSize, maxSize);
-
+	start = clock();
+	faces = myHaarDetectObjectsShrink(outpic, cascade, 1.2,4, 0, minSize, maxSize);
+	end = clock();
+	cout << "ºÄÊ±£º" << (end - start) / CLOCKS_PER_SEC * 1000 << "ms" << endl;
 	filePic.open("E://faces.txt", ios::out);
 
 	for (int i = 0; i <faces->count; i++)
