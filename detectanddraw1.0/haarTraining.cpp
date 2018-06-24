@@ -1329,6 +1329,8 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 	
 	int count = 0;
 	int count2 = 0;
+	int x_step = 1;
+	int y_step = 1;
 	//图像缩小
 	for (current_scal = 1.0;;current_scal *= scale)
 	{
@@ -1355,9 +1357,11 @@ FaceSeq* myHaarDetectObjectsShrink(MyMat *pic, MyCascadeClassifier classifer, fl
 			imwrite(name, transCvMat(outPic));
 			*/
 	//	GetGrayIntegralImage(outPic->data.ptr, outPicSum->data.i, width, height, outPic->step); //计算积分图
-		for (int i = 0;i < outPic->height - classifer_size.height - 1;i++)
+	//	x_step = (current_scal > 2 ? 1 : 2);
+	//	y_step = (current_scal > 2 ? 1 : 2);
+		for (int i = 0;i < outPic->height - classifer_size.height - 1;i = i + x_step)
 		{
-			for (int j = 0;j < outPic->width - classifer_size.width - 1;j++)
+			for (int j = 0;j < outPic->width - classifer_size.width - 1;j = j + y_step)
 			{
 				
 			//	cout << "开始截取"<< endl;

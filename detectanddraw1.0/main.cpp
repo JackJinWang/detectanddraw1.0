@@ -33,10 +33,10 @@ void detect_and_draw(MyMat *img)
 	double start, end;
 	ofstream filePic;
 	FaceSeq *faces = NULL;
-	Mat picMat = imread("e:\\ce\\004.jpg");
+	Mat picMat = imread("e:\\2.jpg");
 	MyMat *outpic = createMyMat(picMat.rows, picMat.cols, ONE_CHANNEL, UCHAR_TYPE);
 	//bin_linear_scale(img, outpic, 450, 300);
-	outpic = transMatAndSmooth(outpic, "e:\\ce\\004.jpg");
+	outpic = transMatAndSmooth(outpic, "e:\\2.jpg");
 	if (outpic == nullptr)
 	{
 		cout << "Í¼Æ¬²»´æÔÚ" << endl;
@@ -50,7 +50,7 @@ void detect_and_draw(MyMat *img)
 	maxSize.width = 500;
 	maxSize.height = 500;
 	start = clock();
-	faces = myHaarDetectObjectsShrink(outpic, cascade, 1.2,4, 0, minSize, maxSize);
+	faces = myHaarDetectObjectsShrink(outpic, cascade, 1.2,5, 0, minSize, maxSize);
 	end = clock();
 	cout << "ºÄÊ±£º" << (end - start) / CLOCKS_PER_SEC * 1000 << "ms" << endl;
 	filePic.open("E://faces.txt", ios::out);
